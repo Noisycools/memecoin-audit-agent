@@ -1,0 +1,28 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./memecoin_audit.db
+      - NINEROUTER_BASE_URL=${NINEROUTER_BASE_URL:-http://host.docker.internal:20128/v1}
+      - NINEROUTER_MODEL=${NINEROUTER_MODEL:-gemini-3.8-flash-high}
+      - RUGCHECK_API_KEY=${RUGCHECK_API_KEY:-}
+      - HELIUS_API_KEY=${HELIUS_API_KEY:-}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - backend

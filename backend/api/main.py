@@ -15,6 +15,7 @@ from backend.clients.cache import TTLCache
 from backend.clients.dexscreener import DexScreenerClient
 from backend.clients.rugcheck import RugCheckClient
 from backend.clients.solana_rpc import SolanaRpcClient
+from backend.clients.telegram import TelegramNotifier
 from backend.config import AppConfig, load_config
 from backend.db.repository import AuditRepository
 from backend.db.session import create_async_session_factory
@@ -39,6 +40,7 @@ async def create_app(
     adapter = SolanaChainAdapter(dexscreener=dex, rugcheck=rug, solana_rpc=rpc)
     ai_client = NineRouterClient(config=cfg)
     broadcaster = SSEBroadcaster()
+    telegram = TelegramNotifier(bot_token=cfg.telegram_bot_token, chat_id=cfg.telegram_chat_id)
 
     worker = ScanPipelineWorker(
         config=cfg,
@@ -46,6 +48,7 @@ async def create_app(
         adapter=adapter,
         ai_client=ai_client,
         event_cb=broadcaster.broadcast,
+        alert_notifier_cb=telegram.send_alert,
     )
 
     @asynccontextmanager
