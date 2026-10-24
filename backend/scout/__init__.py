@@ -1,0 +1,1 @@
+"""GMGN Scout heuristics module."""
