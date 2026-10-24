@@ -29,13 +29,15 @@ export function TokenCharts({
 }) {
   const top10 = Number(holderMetrics?.top10_pct_ex_lp ?? 0);
   const creator = Number(holderMetrics?.creator_balance_pct ?? 0);
+  const lpSupply = Number(holderMetrics?.lp_supply_pct ?? 0);
   const lpLocked = Number(holderMetrics?.lp_locked_pct ?? 0);
-  const others = Math.max(0, 100 - top10 - creator);
+  const others = Math.max(0, 100 - lpSupply - top10 - creator);
 
   const pieData = [
-    { name: "Holder Lainnya", value: Number(others.toFixed(1)) },
+    { name: "LP Pool", value: Number(lpSupply.toFixed(1)) },
     { name: "Top 10 (Non-LP)", value: Number(top10.toFixed(1)) },
     { name: "Creator", value: Number(creator.toFixed(1)) },
+    { name: "Holder Lainnya", value: Number(others.toFixed(1)) },
   ];
 
   const chartSnapshots = snapshots.map((s) => ({
@@ -43,6 +45,7 @@ export function TokenCharts({
       hour: "2-digit",
       minute: "2-digit",
     }),
+    price_usd: s.price_usd ?? 0,
     liquidity: s.liquidity_usd ?? 0,
     risk_score: s.risk_score,
   }));
@@ -51,7 +54,7 @@ export function TokenCharts({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-          Linimasa Likuiditas (USD) &amp; Skor Risiko
+          Linimasa Harga (USD), Likuiditas ($), &amp; Skor Risiko
         </h3>
         <div className="h-60">
           <ResponsiveContainer width="100%" height="100%">
@@ -78,6 +81,14 @@ export function TokenCharts({
                 dataKey="liquidity"
                 name="Likuiditas ($)"
                 stroke="#38bdf8"
+                strokeWidth={2}
+              />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="price_usd"
+                name="Harga (USD)"
+                stroke="#10b981"
                 strokeWidth={2}
               />
               <Line

@@ -19,3 +19,11 @@ async def test_api_health_tokens_and_settings_endpoints(tmp_path):
         settings_res = await ac.put("/api/v1/settings", json={"min_liquidity_usd": 7500.0})
         assert settings_res.status_code == 200
         assert settings_res.json()["thresholds"]["prefilter"]["min_liquidity_usd"] == 7500.0
+
+
+def test_uvicorn_factory_loads_create_app_synchronously(tmp_path, monkeypatch):
+    from fastapi import FastAPI
+    monkeypatch.setenv("DATABASE_URL", f"sqlite+aiosqlite:///{tmp_path / 'sync_factory.db'}")
+    app = create_app(enable_scheduler=False)
+    assert isinstance(app, FastAPI)
+

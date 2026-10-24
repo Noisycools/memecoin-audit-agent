@@ -174,6 +174,11 @@ export function LiveScannerTable({
               >
                 {v}
               </span>
+              {row.original.verdict_changed && row.original.previous_verdict && (
+                <span className="px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 text-[10px]">
+                  dari {row.original.previous_verdict}
+                </span>
+              )}
               {conf === "low" && (
                 <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px]">
                   Confidence Rendah

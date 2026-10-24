@@ -71,3 +71,49 @@ def test_contract_flags_active_mint_and_freeze_as_critical():
     assert "MINT_AUTHORITY_ACTIVE" in crit_codes
     assert "FREEZE_AUTHORITY_ACTIVE" in crit_codes
     assert "RUGCHECK_DANGER_OR_RUGGED" in crit_codes
+
+
+def test_wash_trade_detects_m5_flat_price_even_when_h1_txns_below_threshold():
+    cfg = load_config()
+    data = EnrichedTokenData(
+        token=TokenIdentity(chain="solana", address="MintM5Flat", symbol="M5F", name="M5Flat"),
+        market=MarketMetrics(
+            price_usd=0.01,
+            liquidity_usd=30000.0,
+            volume_24h=50000.0,
+            txns_h1_buys=80,
+            txns_h1_sells=70,
+            price_change_h1=5.0,
+            txns_m5_buys=70,
+            txns_m5_sells=60,
+            price_change_m5=0.4,
+            pair_age_minutes=30,
+        ),
+        rugcheck=None,
+    )
+    res = run_gmgn_scout(data, cfg)
+    codes = {f.code for f in res.flags}
+    assert "HIGH_TXNS_FLAT_PRICE" in codes
+
+
+def test_contract_flags_moderate_transfer_fee_and_mutable_metadata_simultaneously():
+    cfg = load_config()
+    rug = RugCheckReport(
+        mint="MintExt",
+        mint_authority=None,
+        freeze_authority=None,
+        rugged=False,
+        transfer_fee_bps=300,
+        mutable_metadata=True,
+        lp_locked_pct=100.0,
+    )
+    data = EnrichedTokenData(
+        token=TokenIdentity(chain="solana", address="MintExt", symbol="EXT", name="Ext"),
+        market=MarketMetrics(price_usd=0.01, liquidity_usd=40000.0, volume_24h=20000.0, pair_age_minutes=60),
+        rugcheck=rug,
+    )
+    res = run_gmgn_scout(data, cfg)
+    warn_codes = {f.code for f in res.flags if f.category == "contract" and f.severity == "warn"}
+    assert "DANGEROUS_TOKEN_EXTENSION" in warn_codes
+    assert "MUTABLE_METADATA" in warn_codes
+

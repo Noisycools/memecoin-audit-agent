@@ -56,6 +56,12 @@ def evaluate_holders(
         for h in rug.top_holders
         if not _is_lp_or_burn(h.address, h.owner, data.market.pair_address, rug.known_accounts)
     ]
+    lp_holders = [
+        h
+        for h in rug.top_holders
+        if _is_lp_or_burn(h.address, h.owner, data.market.pair_address, rug.known_accounts)
+    ]
+    lp_supply_pct = round(sum(h.pct for h in lp_holders), 2)
 
     top1_pct = round(non_lp_holders[0].pct, 2) if non_lp_holders else 0.0
     top10_pct = round(sum(h.pct for h in non_lp_holders[:10]), 2)
@@ -169,5 +175,6 @@ def evaluate_holders(
         "graph_insiders_detected": rug.graph_insiders_detected,
         "creator_balance_pct": creator_pct,
         "lp_locked_pct": rug.lp_locked_pct,
+        "lp_supply_pct": lp_supply_pct,
     }
     return flags, evaluated, unknown, metrics

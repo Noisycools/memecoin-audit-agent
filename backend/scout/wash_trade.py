@@ -76,44 +76,46 @@ def evaluate_wash_trade(
 
     # 3. High txns with flat price movement
     evaluated += 1
-    if (
-        m.txns_h1_buys is not None
-        and m.txns_h1_sells is not None
-        and m.price_change_h1 is not None
-    ):
-        total_h1 = m.txns_h1_buys + m.txns_h1_sells
-        if total_h1 >= wt.flat_price_min_txns_h1 and abs(m.price_change_h1) <= wt.flat_price_max_change_h1_pct:
+    total_h1 = (
+        (m.txns_h1_buys + m.txns_h1_sells)
+        if (m.txns_h1_buys is not None and m.txns_h1_sells is not None)
+        else 0
+    )
+    total_m5 = (
+        (m.txns_m5_buys + m.txns_m5_sells)
+        if (m.txns_m5_buys is not None and m.txns_m5_sells is not None)
+        else 0
+    )
+    has_h1_flat_check = total_h1 > 0 and m.price_change_h1 is not None
+    has_m5_flat_check = total_m5 > 0 and m.price_change_m5 is not None
+
+    if not has_h1_flat_check and not has_m5_flat_check:
+        unknown += 1
+    else:
+        if has_h1_flat_check and total_h1 >= wt.flat_price_min_txns_h1 and abs(m.price_change_h1 or 0.0) <= wt.flat_price_max_change_h1_pct:
             flags.append(
                 ScoutFlag(
                     category="volume_integrity",
                     severity="warn",
                     code="HIGH_TXNS_FLAT_PRICE",
-                    value=abs(m.price_change_h1),
+                    value=abs(m.price_change_h1 or 0.0),
                     threshold=wt.flat_price_max_change_h1_pct,
                     source="dexscreener",
                     detail_id=f"Banyak transaksi h1 ({total_h1} tx) namun harga nyaris stagnan ({m.price_change_h1}%).",
                 )
             )
-    elif (
-        m.txns_m5_buys is not None
-        and m.txns_m5_sells is not None
-        and m.price_change_m5 is not None
-    ):
-        total_m5 = m.txns_m5_buys + m.txns_m5_sells
-        if total_m5 >= wt.flat_price_min_txns_m5 and abs(m.price_change_m5) <= wt.flat_price_max_change_m5_pct:
+        elif has_m5_flat_check and total_m5 >= wt.flat_price_min_txns_m5 and abs(m.price_change_m5 or 0.0) <= wt.flat_price_max_change_m5_pct:
             flags.append(
                 ScoutFlag(
                     category="volume_integrity",
                     severity="warn",
                     code="HIGH_TXNS_FLAT_PRICE",
-                    value=abs(m.price_change_m5),
+                    value=abs(m.price_change_m5 or 0.0),
                     threshold=wt.flat_price_max_change_m5_pct,
                     source="dexscreener",
                     detail_id=f"Transaksi m5 tinggi ({total_m5} tx) namun perubahan harga sangat kecil ({m.price_change_m5}%).",
                 )
             )
-    else:
-        unknown += 1
 
     # 4. Sudden m5 volume spike without liquidity support
     evaluated += 1

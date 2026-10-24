@@ -97,6 +97,8 @@ class TokenAuditReport(BaseModel):
     market: MarketMetrics
     risk_score: int = Field(ge=0, le=100)
     verdict: VerdictType
+    verdict_changed: bool = False
+    previous_verdict: VerdictType | None = None
     confidence: ConfidenceType = "high"
     breakdown: ScoreBreakdown
     flags: list[ScoutFlag] = Field(default_factory=list)

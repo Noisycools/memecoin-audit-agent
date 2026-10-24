@@ -43,7 +43,7 @@ class AsyncSessionFactory:
         return AsyncSessionAdapter(self._sync_factory())
 
 
-async def create_async_session_factory(database_url: str) -> AsyncSessionFactory:
+def create_session_factory(database_url: str) -> AsyncSessionFactory:
     sync_url = (
         database_url.replace("sqlite+aiosqlite://", "sqlite://")
         .replace("postgresql+asyncpg://", "postgresql://")
@@ -60,6 +60,11 @@ async def create_async_session_factory(database_url: str) -> AsyncSessionFactory
             cursor.execute("PRAGMA foreign_keys=ON;")
             cursor.close()
 
-    await asyncio.to_thread(Base.metadata.create_all, engine)
+    Base.metadata.create_all(engine)
     sync_factory = sessionmaker(engine, expire_on_commit=False)
     return AsyncSessionFactory(sync_factory)
+
+
+async def create_async_session_factory(database_url: str) -> AsyncSessionFactory:
+    return await asyncio.to_thread(create_session_factory, database_url)
+

@@ -80,6 +80,8 @@ export interface TokenAuditReport {
   market: MarketMetrics;
   risk_score: number;
   verdict: VerdictType;
+  verdict_changed?: boolean;
+  previous_verdict?: VerdictType | null;
   confidence: ConfidenceType;
   breakdown: ScoreBreakdown;
   flags: ScoutFlag[];

@@ -84,7 +84,7 @@ def compute_score_breakdown(
 
     if liq_usd and mc_usd and mc_usd > 0:
         liq_mc_ratio = round(liq_usd / mc_usd, 4)
-        if liq_mc_ratio < 0.03:
+        if liq_mc_ratio < 0.05:
             liq_pts += 5
             extra_flags.append(
                 ScoutFlag(
@@ -92,7 +92,7 @@ def compute_score_breakdown(
                     severity="warn",
                     code="LOW_LIQ_TO_MCAP_RATIO",
                     value=liq_mc_ratio,
-                    threshold=0.03,
+                    threshold=0.05,
                     source="dexscreener",
                     detail_id=f"Rasio likuiditas terhadap market cap tipis ({liq_mc_ratio:.1%}).",
                 )

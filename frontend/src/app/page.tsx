@@ -24,7 +24,10 @@ export default function LiveScannerPage() {
 
   // Filters
   const [verdictFilter, setVerdictFilter] = useState<string>("");
+  const [chainFilter, setChainFilter] = useState<string>("solana");
   const [minLiqFilter, setMinLiqFilter] = useState<string>("");
+  const [minAgeFilter, setMinAgeFilter] = useState<string>("");
+  const [maxAgeFilter, setMaxAgeFilter] = useState<string>("");
   const [hideCritical, setHideCritical] = useState<boolean>(false);
 
   // Manual audit input
@@ -38,7 +41,10 @@ export default function LiveScannerPage() {
       const [tokenRes, healthRes] = await Promise.all([
         fetchTokens({
           verdict: verdictFilter || undefined,
+          chain: chainFilter || undefined,
           min_liquidity_usd: minLiqFilter ? Number(minLiqFilter) : undefined,
+          min_age_minutes: minAgeFilter ? Number(minAgeFilter) : undefined,
+          max_age_minutes: maxAgeFilter ? Number(maxAgeFilter) : undefined,
           hide_critical: hideCritical,
         }),
         fetchSystemHealth().catch(() => null),
@@ -51,7 +57,7 @@ export default function LiveScannerPage() {
     } finally {
       setLoading(false);
     }
-  }, [verdictFilter, minLiqFilter, hideCritical]);
+  }, [verdictFilter, chainFilter, minLiqFilter, minAgeFilter, maxAgeFilter, hideCritical]);
 
   useEffect(() => {
     loadData();
@@ -145,6 +151,15 @@ export default function LiveScannerPage() {
               {health?.nine_router.model || "gemini-3.8-flash-high"}
             </b>
           </span>
+          <span className="text-slate-600">|</span>
+          <span>
+            Scan Terakhir:{" "}
+            <b className="text-slate-200">
+              {health?.last_discovery_at
+                ? new Date(health.last_discovery_at).toLocaleTimeString("id-ID")
+                : "Menunggu siklus"}
+            </b>
+          </span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -209,6 +224,37 @@ export default function LiveScannerPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-400">Chain:</span>
+            <select
+              value={chainFilter}
+              onChange={(e) => setChainFilter(e.target.value)}
+              className="px-2 py-1 rounded bg-slate-900 border border-slate-700 text-slate-100"
+            >
+              <option value="solana">Solana</option>
+              <option value="">Semua</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-400">Umur (m):</span>
+            <input
+              type="number"
+              value={minAgeFilter}
+              onChange={(e) => setMinAgeFilter(e.target.value)}
+              placeholder="Min"
+              className="w-16 px-2 py-1 rounded bg-slate-900 border border-slate-700 text-slate-100"
+            />
+            <span>-</span>
+            <input
+              type="number"
+              value={maxAgeFilter}
+              onChange={(e) => setMaxAgeFilter(e.target.value)}
+              placeholder="Max"
+              className="w-20 px-2 py-1 rounded bg-slate-900 border border-slate-700 text-slate-100"
+            />
+          </div>
+
           <div className="flex items-center gap-1.5">
             <span className="text-slate-400">Likuiditas Min ($):</span>
             <input

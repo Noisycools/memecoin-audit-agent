@@ -83,7 +83,32 @@ class ScanPipelineWorker:
             )
 
             recent_snaps = await self.repo.get_recent_snapshots(chain, address, limit=5)
-            if force_ai or scoring.is_shortlisted_for_ai:
+            existing_detail = await self.repo.get_token_detail(chain, address)
+
+            reuse_existing_ai = False
+            if (
+                not force_ai
+                and scoring.is_shortlisted_for_ai
+                and existing_detail is not None
+                and existing_detail.report.ai_analysis is not None
+                and existing_detail.report.ai_analysis.status == "completed"
+                and existing_detail.report.verdict == draft_report.verdict
+            ):
+                prev_rep = existing_detail.report
+                prev_codes = {f.code for f in prev_rep.flags}
+                curr_codes = {f.code for f in draft_report.flags}
+                prev_liq = prev_rep.market.liquidity_usd or 0.0
+                curr_liq = draft_report.market.liquidity_usd or 0.0
+                liq_shift = abs(curr_liq - prev_liq) / prev_liq if prev_liq > 0 else 1.0
+                prev_vol = prev_rep.market.volume_24h or 0.0
+                curr_vol = draft_report.market.volume_24h or 0.0
+                vol_shift = abs(curr_vol - prev_vol) / prev_vol if prev_vol > 0 else 0.0
+                if prev_codes == curr_codes and liq_shift < 0.15 and vol_shift < 0.15:
+                    reuse_existing_ai = True
+
+            if reuse_existing_ai and existing_detail is not None and existing_detail.report.ai_analysis is not None:
+                ai_res = existing_detail.report.ai_analysis
+            elif force_ai or scoring.is_shortlisted_for_ai:
                 ai_res = await self.ai_client.analyze_token(draft_report, recent_snapshots=recent_snaps)
             else:
                 ai_res = build_deterministic_fallback_analysis(

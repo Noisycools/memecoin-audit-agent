@@ -18,20 +18,30 @@ from backend.clients.solana_rpc import SolanaRpcClient
 from backend.clients.telegram import TelegramNotifier
 from backend.config import AppConfig, load_config
 from backend.db.repository import AuditRepository
-from backend.db.session import create_async_session_factory
+from backend.db.session import create_session_factory
 from backend.pipeline.worker import ScanPipelineWorker
 
 
-async def create_app(
+class AwaitableFastAPI(FastAPI):
+    """FastAPI subclass that works both synchronously (`uvicorn --factory`) and via `await create_app()`."""
+
+    def __await__(self):
+        async def _identity() -> AwaitableFastAPI:
+            return self
+
+        return _identity().__await__()
+
+
+def create_app(
     db_url: str | None = None,
     enable_scheduler: bool = True,
     config: AppConfig | None = None,
-) -> FastAPI:
+) -> AwaitableFastAPI:
     cfg = config or load_config()
     if db_url:
         cfg.database_url = db_url
 
-    session_factory = await create_async_session_factory(cfg.database_url)
+    session_factory = create_session_factory(cfg.database_url)
     repo = AuditRepository(session_factory)
     cache = TTLCache()
     dex = DexScreenerClient(cache=cache)
@@ -101,7 +111,7 @@ async def create_app(
             await rpc.close()
             await ai_client.close()
 
-    app = FastAPI(
+    app = AwaitableFastAPI(
         title="Memecoin Audit Agent API",
         version="0.1.0",
         lifespan=lifespan,

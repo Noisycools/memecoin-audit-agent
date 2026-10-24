@@ -72,7 +72,20 @@ def evaluate_contract(
                 detail_id=f"Pajak transfer Token-2022 tinggi ({rug.transfer_fee_bps / 100:.1f}%).",
             )
         )
-    elif rug.mutable_metadata is True:
+    elif rug.transfer_fee_bps is not None and rug.transfer_fee_bps > 0:
+        flags.append(
+            ScoutFlag(
+                category="contract",
+                severity="warn",
+                code="DANGEROUS_TOKEN_EXTENSION",
+                value=rug.transfer_fee_bps,
+                threshold=ct.max_transfer_fee_warn_bps,
+                source="rugcheck",
+                detail_id=f"Token memiliki biaya transfer Token-2022 ({rug.transfer_fee_bps / 100:.1f}%).",
+            )
+        )
+
+    if rug.mutable_metadata is True:
         flags.append(
             ScoutFlag(
                 category="contract",

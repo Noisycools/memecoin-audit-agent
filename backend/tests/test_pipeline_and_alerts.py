@@ -48,3 +48,50 @@ async def test_pipeline_rescan_detects_verdict_change_and_liquidity_drop_alert(t
     alert_types = {a.alert_type for a in alerts}
     assert "VERDICT_CHANGED" in alert_types
     assert "LIQUIDITY_DROP" in alert_types
+
+
+@pytest.mark.asyncio
+async def test_worker_rescan_reuses_ai_analysis_when_metrics_shift_under_15_percent(tmp_path):
+    from backend.adapters.base import ChainAdapter, EnrichedTokenData
+    from backend.clients.rugcheck import RugCheckReport
+    from backend.pipeline.worker import ScanPipelineWorker
+    from backend.schemas.token_report import AIAnalysisResult, MarketMetrics, TokenIdentity
+
+    class DummyAdapter(ChainAdapter):
+        chain_id = "solana"
+        def __init__(self):
+            self.liq = 60000.0
+        async def discover_tokens(self):
+            return []
+        async def enrich_token(self, token_address: str, force_refresh: bool = False):
+            return EnrichedTokenData(
+                token=TokenIdentity(chain="solana", address=token_address, symbol="STABLE", name="Stable Coin"),
+                market=MarketMetrics(price_usd=0.01, liquidity_usd=self.liq, market_cap=300000.0, volume_24h=100000.0, pair_age_minutes=60),
+                rugcheck=RugCheckReport(mint=token_address, lp_locked_pct=100.0),
+                social_meta={"has_website": True, "has_twitter": True},
+            )
+
+    class CountingAIClient:
+        def __init__(self):
+            self.calls = 0
+        async def analyze_token(self, report, recent_snapshots=None):
+            self.calls += 1
+            return AIAnalysisResult(status="completed", model="gemini-3.8-flash-high", health_status="HEALTHY", buyer_quality="ORGANIC", conviction_score=85, summary_id="Analisis AI pertama.")
+
+    db_url = f"sqlite+aiosqlite:///{tmp_path / 'rescan_ai.db'}"
+    session_factory = await create_async_session_factory(db_url)
+    repo = AuditRepository(session_factory)
+    cfg = load_config()
+    adapter = DummyAdapter()
+    ai_client = CountingAIClient()
+    worker = ScanPipelineWorker(config=cfg, repo=repo, adapter=adapter, ai_client=ai_client)  # type: ignore[arg-type]
+
+    rep1 = await worker.audit_single_token("solana", "MintStable1", force_refresh=True, force_ai=False)
+    assert rep1 is not None and ai_client.calls == 1
+
+    # Second background rescan with <15% liquidity change (+5%) should reuse AI analysis
+    adapter.liq = 63000.0
+    rep2 = await worker.audit_single_token("solana", "MintStable1", force_refresh=True, force_ai=False)
+    assert rep2 is not None and ai_client.calls == 1
+    assert rep2.ai_analysis is not None and rep2.ai_analysis.status == "completed"
+

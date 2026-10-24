@@ -57,3 +57,19 @@ def test_missing_rugcheck_sets_low_confidence_and_never_promising():
     res = evaluate_token_score(data, scout, cfg)
     assert res.confidence == "low"
     assert res.verdict != "PROMISING"
+
+
+def test_rubric_flags_low_liq_to_mcap_ratio_under_5_percent():
+    cfg = load_config()
+    rug = RugCheckReport(mint="MintRatio", mint_authority=None, freeze_authority=None, rugged=False, lp_locked_pct=100.0)
+    data = EnrichedTokenData(
+        token=TokenIdentity(chain="solana", address="MintRatio", symbol="RAT", name="Ratio"),
+        market=MarketMetrics(price_usd=0.01, liquidity_usd=40000.0, market_cap=1000000.0, volume_24h=80000.0, pair_age_minutes=60),
+        rugcheck=rug,
+        social_meta={"has_website": True, "has_twitter": True},
+    )
+    scout = run_gmgn_scout(data, cfg)
+    res = evaluate_token_score(data, scout, cfg)
+    codes = {f.code for f in res.all_flags}
+    assert "LOW_LIQ_TO_MCAP_RATIO" in codes
+

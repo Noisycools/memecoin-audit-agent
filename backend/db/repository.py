@@ -148,6 +148,9 @@ class AuditRepository:
                 existing.previous_verdict = prev_verdict if v_changed else existing.previous_verdict
                 existing.latest_verdict = report.verdict
                 existing.verdict_changed = v_changed
+                report.verdict_changed = v_changed
+                report.previous_verdict = prev_verdict if v_changed else existing.previous_verdict  # type: ignore[assignment]
+                report_json_str = json.dumps(report.model_dump(mode="json"), ensure_ascii=False)
                 existing.latest_confidence = report.confidence
                 existing.latest_liquidity_usd = report.market.liquidity_usd
                 existing.latest_market_cap = report.market.market_cap
