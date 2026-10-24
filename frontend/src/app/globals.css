@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #090d16;
+  color: #f8fafc;
+}
+
+@keyframes pulseFlash {
+  0% { background-color: rgba(56, 189, 248, 0.25); }
+  100% { background-color: transparent; }
+}
+
+.animate-row-flash {
+  animation: pulseFlash 2s ease-out;
+}
