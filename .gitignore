@@ -1,0 +1,15 @@
+.superpowers/
+.worktrees/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.db
+*.db-shm
+*.db-wal
+.env
+frontend/node_modules/
+frontend/.next/
+frontend/out/
