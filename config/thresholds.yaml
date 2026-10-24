@@ -1,0 +1,41 @@
+prefilter:
+  min_liquidity_usd: 5000.0
+  min_pair_age_minutes: 5
+  max_pair_age_minutes: 10080
+
+wash_trade:
+  vol_liq_warn: 50.0
+  vol_liq_critical: 200.0
+  uniform_txns_min_h1: 200
+  uniform_buy_ratio_low: 0.48
+  uniform_buy_ratio_high: 0.52
+  flat_price_min_txns_m5: 100
+  flat_price_min_txns_h1: 400
+  flat_price_max_change_m5_pct: 1.0
+  flat_price_max_change_h1_pct: 2.0
+  vol_spike_multiplier: 3.0
+
+holders:
+  top10_warn: 0.30
+  top10_critical: 0.50
+  top1_warn: 0.10
+  top1_critical: 0.15
+  insider_cluster_warn: 0.10
+  insider_cluster_critical: 0.25
+  creator_holdings_warn: 0.05
+
+contract:
+  lp_locked_min_pct: 80.0
+  max_transfer_fee_warn_bps: 500
+
+verdict_rules:
+  promising_min_liquidity_usd: 25000.0
+  low_confidence_unknown_ratio: 0.30
+  medium_confidence_unknown_ratio: 0.10
+
+scanner:
+  discovery_interval_seconds: 60
+  rescan_interval_seconds: 180
+  max_concurrency: 5
+  active_chains:
+    - solana
