@@ -8,8 +8,9 @@ services:
     environment:
       - BACKEND_PORT=8004
       - DATABASE_URL=sqlite+aiosqlite:///./memecoin_audit.db
-      - NINEROUTER_BASE_URL=${NINEROUTER_BASE_URL:-http://host.docker.internal:20128/v1}
+      - NINEROUTER_BASE_URL=${DOCKER_NINEROUTER_BASE_URL:-http://host.docker.internal:20128/v1}
       - NINEROUTER_MODEL=${NINEROUTER_MODEL:-gemini-3.8-flash-high}
+      - NINEROUTER_API_KEY=${NINEROUTER_API_KEY:-local-9router}
       - RUGCHECK_API_KEY=${RUGCHECK_API_KEY:-}
       - HELIUS_API_KEY=${HELIUS_API_KEY:-}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
