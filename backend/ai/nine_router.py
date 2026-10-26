@@ -71,6 +71,9 @@ class NineRouterClient:
 
         try:
             resp = await self._client.post(url, headers=headers, json=payload)
+            if resp.status_code in (400, 404) and "/" not in model_name:
+                payload["model"] = f"ag/{model_name}"
+                resp = await self._client.post(url, headers=headers, json=payload)
             resp.raise_for_status()
             body = resp.json()
             content = (

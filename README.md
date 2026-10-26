@@ -12,14 +12,16 @@ Sistem pemindaian, audit teknis, dan penilaian kelayakan memecoin **Solana** sec
 
 Pastikan `9router` sudah aktif di `http://localhost:20128` dengan model `gemini-3.8-flash-high`.
 
-**Backend (FastAPI + Scanner Worker):**
-```bash
-pip install -e backend[dev]
-uvicorn backend.api.main:create_app --factory --host 0.0.0.0 --port 8000
+**Backend (FastAPI + Scanner Worker di Port `8004`):**
+```powershell
+python -m pip install --no-build-isolation -e "backend[dev]"
+python -m backend
+# atau:
+python -m uvicorn backend.api.main:create_app --factory --host 0.0.0.0 --port 8004
 ```
 
 **CLI Audit Manual:**
-```bash
+```powershell
 # Ambil data mentah DexScreener + RugCheck
 python -m backend.cli fetch <SOLANA_MINT_ADDRESS>
 
@@ -27,13 +29,13 @@ python -m backend.cli fetch <SOLANA_MINT_ADDRESS>
 python -m backend.cli audit <SOLANA_MINT_ADDRESS>
 ```
 
-**Frontend (Next.js Live Dashboard):**
-```bash
+**Frontend (Next.js Live Dashboard di Port `3003`):**
+```powershell
 cd frontend
 npm install
 npm run dev
 ```
-Buka dashboard di `http://localhost:3000`.
+Buka dashboard di `http://localhost:3003`.
 
 ### 2. Menjalankan dengan Docker Compose (Satu Perintah)
 
@@ -48,6 +50,9 @@ docker compose up --build
 
 | Variabel | Default | Fungsi |
 | --- | --- | --- |
+| `BACKEND_PORT` | `8004` | Port HTTP untuk server FastAPI backend |
+| `FRONTEND_PORT` | `3003` | Port HTTP untuk dashboard Next.js frontend |
+| `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8004` | URL API backend yang diakses oleh frontend |
 | `DATABASE_URL` | `sqlite+aiosqlite:///./memecoin_audit.db` | Lokasi database SQLite (mode WAL) atau PostgreSQL |
 | `NINEROUTER_BASE_URL` | `http://localhost:20128/v1` | Endpoint OpenAI-compatible untuk `9router` lokal |
 | `NINEROUTER_MODEL` | `gemini-3.8-flash-high` | Nama model AI di `9router` |

@@ -93,6 +93,8 @@ class AppConfig(BaseModel):
     thresholds: ThresholdsConfig = Field(default_factory=ThresholdsConfig)
     weights: WeightsConfig = Field(default_factory=WeightsConfig)
     ai: AIConfig = Field(default_factory=AIConfig)
+    host: str = Field(default_factory=lambda: os.getenv("BACKEND_HOST", "0.0.0.0"))
+    port: int = Field(default_factory=lambda: int(os.getenv("BACKEND_PORT", "8004")))
     database_url: str = Field(
         default_factory=lambda: os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{ROOT_DIR / 'memecoin_audit.db'}")
     )

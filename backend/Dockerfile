@@ -7,6 +7,6 @@ COPY backend/ /app/backend/
 
 RUN pip install --no-cache-dir -e /app/backend
 
-EXPOSE 8000
+EXPOSE 8004
 
-CMD ["uvicorn", "backend.api.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "backend.api.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8004"]

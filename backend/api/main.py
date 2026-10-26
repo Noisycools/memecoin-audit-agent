@@ -1,8 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncGenerator
+
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -134,3 +140,19 @@ def create_app(
 
     app.include_router(router)
     return app
+
+
+def run_server() -> None:
+    import uvicorn
+
+    cfg = load_config()
+    uvicorn.run(
+        "backend.api.main:create_app",
+        factory=True,
+        host=cfg.host,
+        port=cfg.port,
+    )
+
+
+if __name__ == "__main__":
+    run_server()

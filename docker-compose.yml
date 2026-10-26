@@ -4,8 +4,9 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     ports:
-      - "8000:8000"
+      - "8004:8004"
     environment:
+      - BACKEND_PORT=8004
       - DATABASE_URL=sqlite+aiosqlite:///./memecoin_audit.db
       - NINEROUTER_BASE_URL=${NINEROUTER_BASE_URL:-http://host.docker.internal:20128/v1}
       - NINEROUTER_MODEL=${NINEROUTER_MODEL:-gemini-3.8-flash-high}
@@ -21,8 +22,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3003:3003"
     environment:
-      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8004
     depends_on:
       - backend
