@@ -20,36 +20,36 @@ Memecoin Audit Agent is an automated end-to-end scanning, contract auditing, and
 ```mermaid
 flowchart TD
     subgraph Ingestion["1. Data Ingestion & Prefilter"]
-        DEX[DexScreener API\nLatest Profiles & Boosts] --> PRE[Prefilter Gate\nLiq >= $5k, Age 5m-7d]
-        RUG[RugCheck API\nContract Security & Top Holders] --> ADAPT[Solana Chain Adapter]
-        RPC[Optional Solana RPC / Helius\nPer-Wallet Block Clustering] -.-> ADAPT
+        DEX["DexScreener API<br/>Latest Profiles & Boosts"] --> PRE["Prefilter Gate<br/>Liq >= $5k, Age 5m-7d"]
+        RUG["RugCheck API<br/>Contract Security & Top Holders"] --> ADAPT["Solana Chain Adapter"]
+        RPC["Optional Solana RPC / Helius<br/>Per-Wallet Block Clustering"] -.-> ADAPT
     end
 
     subgraph Tier1["2. Deterministic Engine & GMGN Scout"]
-        PRE --> SCOUT[GMGN Scout Module\nWash Trade & Bundle Heuristics]
+        PRE --> SCOUT["GMGN Scout Module<br/>Wash Trade & Bundle Heuristics"]
         ADAPT --> SCOUT
-        SCOUT --> RUBRIC[Scoring Rubric\nContract: 30% | Holders: 25%\nVolume: 20% | Liq: 15% | Social: 10%]
-        RUBRIC --> VERDICT{Verdict Engine}
-        VERDICT -->|Critical Flag or Score >= 70| V_AVOID[AVOID]
-        VERDICT -->|Score 50 - 69| V_HIGH[HIGH RISK]
-        VERDICT -->|Score 30 - 49| V_WATCH[WATCH]
-        VERDICT -->|Score < 30 & Liq >= $25k & Clean| V_PROM[PROMISING]
+        SCOUT --> RUBRIC["Scoring Rubric<br/>Contract: 30% • Holders: 25%<br/>Volume: 20% • Liq: 15% • Social: 10%"]
+        RUBRIC --> VERDICT{"Verdict Engine"}
+        VERDICT -->|"Critical Flag or Score >= 70"| V_AVOID["AVOID"]
+        VERDICT -->|"Score 50-69"| V_HIGH["HIGH RISK"]
+        VERDICT -->|"Score 30-49"| V_WATCH["WATCH"]
+        VERDICT -->|"Score 0-29, Liq >= $25k, Clean"| V_PROM["PROMISING"]
     end
 
     subgraph Tier2["3. Local LLM Analysis (9router)"]
-        V_WATCH --> AI[9router / Local LLM\nModel: gemini-3.8-flash-high]
+        V_WATCH --> AI["9router / Local LLM<br/>Model: gemini-3.8-flash-high"]
         V_PROM --> AI
-        AI --> DECISION[AI Decision Panel\nBuyer Quality, Health Status, Liquidity Stress,\nBull Case, Red Flags, Invalidation Trigger]
-        AI -.->|If LLM Unavailable| FALLBACK[Deterministic Fallback Engine]
+        AI --> DECISION["AI Decision Panel<br/>Buyer Quality, Health Status, Liquidity Stress,<br/>Bull Case, Red Flags, Invalidation Trigger"]
+        AI -.->|"If LLM Unavailable"| FALLBACK["Deterministic Fallback Engine"]
     end
 
     subgraph StorageStream["4. Persistence & Presentation"]
-        VERDICT --> DB[(SQLite / PostgreSQL\nWAL Mode)]
+        VERDICT --> DB[("SQLite / PostgreSQL<br/>WAL Mode")]
         DECISION --> DB
-        DB --> SSE[Server-Sent Events / SSE Stream]
-        SSE --> UI[Next.js 14 Dashboard\nLive Table, Top Picks, Watchlist, Charts]
-        DB --> TG[Optional Telegram Alert Bot]
-        CLI[Backend CLI\nfetch / audit commands] -.-> ADAPT
+        DB --> SSE["Server-Sent Events / SSE Stream"]
+        SSE --> UI["Next.js 14 Dashboard<br/>Live Table, Top Picks, Watchlist, Charts"]
+        DB --> TG["Optional Telegram Alert Bot"]
+        CLI["Backend CLI<br/>fetch / audit commands"] -.-> ADAPT
     end
 ```
 
