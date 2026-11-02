@@ -89,7 +89,7 @@ Run backend and frontend containers with a single command:
 
 ```bash
 # 1. Clone repository and enter project directory
-git clone https://github.com/your-username/memecoin-audit-agent.git
+git clone https://github.com/noisycools/memecoin-audit-agent.git
 cd memecoin-audit-agent
 
 # 2. Configure environment
